@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { DatabaseSchema, DeviceInfo, DeviceRules, ActivityEvent, AppRule, AppUsageRecord } from './types.ts';
+import { DatabaseSchema, DeviceInfo, DeviceRules, ActivityEvent, AppRule, AppUsageRecord, InstalledApp } from './types.ts';
 
 const DB_DIR = path.resolve(process.cwd(), 'data');
 const DB_FILE = path.join(DB_DIR, 'winguard-db.json');
@@ -179,7 +179,9 @@ class Database {
 
       if (fs.existsSync(DB_FILE)) {
         const content = fs.readFileSync(DB_FILE, 'utf-8');
-        return JSON.parse(content);
+        const parsed = JSON.parse(content);
+        parsed.installedApps = parsed.installedApps || {};
+        return parsed;
       }
     } catch (err) {
       console.warn('Could not read existing database, initializing fresh one:', err);
@@ -215,6 +217,7 @@ class Database {
           }
         }
       },
+      installedApps: {},
       events: [
         {
           id: 'evt-1',
@@ -472,8 +475,54 @@ class Database {
     return full;
   }
 
-  // Pending Commands (e.g. instant lock, bonus time, popup message)
-  queueCommand(deviceId: string, command: 'lock_now' | 'bonus_time' | 'message_child' | 'unlock_now', payload?: any) {
+  // Installed Applications Reported by Agent
+  getInstalledApps(deviceId: string): InstalledApp[] {
+    if (!this.data.installedApps) this.data.installedApps = {};
+    return this.data.installedApps[deviceId] || [];
+  }
+
+  setInstalledApps(deviceId: string, apps: InstalledApp[]): InstalledApp[] {
+    if (!this.data.installedApps) this.data.installedApps = {};
+    this.data.installedApps[deviceId] = apps;
+    this.addEvent({
+      deviceId,
+      type: 'apps_scanned',
+      severity: 'info',
+      message: `Lista de aplicações instaladas atualizada pelo computador (${apps.length} programas detetados).`,
+      details: { count: apps.length }
+    });
+    this.save();
+    return apps;
+  }
+
+  recordDetectedApp(deviceId: string, app: { displayName?: string; executableName: string; publisher?: string; installLocation?: string; source?: 'registry' | 'process_tracker' | 'start_menu' }) {
+    if (!this.data.installedApps) this.data.installedApps = {};
+    if (!this.data.installedApps[deviceId]) this.data.installedApps[deviceId] = [];
+
+    const cleanExe = app.executableName.toLowerCase().trim();
+    if (!cleanExe) return;
+
+    const existing = this.data.installedApps[deviceId].find((a) => a.executableName.toLowerCase() === cleanExe);
+    if (existing) {
+      existing.detectedAt = new Date().toISOString();
+      if (app.displayName && (!existing.displayName || existing.displayName === existing.executableName)) {
+        existing.displayName = app.displayName;
+      }
+    } else {
+      this.data.installedApps[deviceId].push({
+        displayName: app.displayName || cleanExe,
+        executableName: cleanExe,
+        publisher: app.publisher,
+        installLocation: app.installLocation,
+        detectedAt: new Date().toISOString(),
+        source: app.source || 'process_tracker'
+      });
+    }
+    this.save();
+  }
+
+  // Pending Commands (e.g. instant lock, bonus time, popup message, scan_apps)
+  queueCommand(deviceId: string, command: 'lock_now' | 'bonus_time' | 'message_child' | 'unlock_now' | 'scan_apps', payload?: any) {
     if (!this.data.pendingCommands[deviceId]) {
       this.data.pendingCommands[deviceId] = [];
     }

@@ -10,7 +10,7 @@ import { ActivityLogsTab } from './components/ActivityLogsTab';
 import { SimulatorModal } from './components/SimulatorModal';
 import { NewDeviceModal } from './components/NewDeviceModal';
 import { DeleteDeviceModal } from './components/DeleteDeviceModal';
-import { TabType, DeviceInfo, DeviceRules, AppUsageRecord, ActivityEvent } from './types';
+import { TabType, DeviceInfo, DeviceRules, AppUsageRecord, ActivityEvent, InstalledApp } from './types';
 import { api } from './services/api';
 import { Shield, RefreshCw } from 'lucide-react';
 
@@ -22,6 +22,7 @@ export default function App() {
   const [device, setDevice] = useState<DeviceInfo | null>(null);
   const [rules, setRules] = useState<DeviceRules | null>(null);
   const [appUsage, setAppUsage] = useState<AppUsageRecord[]>([]);
+  const [installedApps, setInstalledApps] = useState<InstalledApp[]>([]);
   const [events, setEvents] = useState<ActivityEvent[]>([]);
 
   const [loading, setLoading] = useState(true);
@@ -56,6 +57,7 @@ export default function App() {
       setDevice(detail.device);
       setRules(detail.rules);
       setAppUsage(detail.appUsage);
+      setInstalledApps(detail.installedApps || []);
       setEvents(detail.events);
       setError(null);
     } catch (err: any) {
@@ -176,6 +178,7 @@ export default function App() {
               <AppRulesTab
                 device={device}
                 rules={rules}
+                installedApps={installedApps}
                 onRefresh={() => loadDeviceDetail(device.id)}
               />
             )}

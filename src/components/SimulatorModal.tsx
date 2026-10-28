@@ -139,6 +139,35 @@ export const SimulatorModal: React.FC<SimulatorModalProps> = ({
     }
   };
 
+  const handleSimulateAppScan = async () => {
+    try {
+      setBusy(true);
+      appendLog('[App Scanner] A pesquisar programas instalados no Registo e Menu Iniciar...');
+      const sampleApps = [
+        { displayName: 'Google Chrome', executableName: 'chrome.exe', publisher: 'Google LLC', source: 'registry' as const, detectedAt: new Date().toISOString() },
+        { displayName: 'Discord', executableName: 'discord.exe', publisher: 'Discord Inc.', source: 'registry' as const, detectedAt: new Date().toISOString() },
+        { displayName: 'Spotify Music', executableName: 'spotify.exe', publisher: 'Spotify AB', source: 'start_menu' as const, detectedAt: new Date().toISOString() },
+        { displayName: 'Steam Client', executableName: 'steam.exe', publisher: 'Valve Corp', source: 'registry' as const, detectedAt: new Date().toISOString() },
+        { displayName: 'Minecraft Launcher', executableName: 'minecraft.exe', publisher: 'Mojang Studios', source: 'registry' as const, detectedAt: new Date().toISOString() },
+        { displayName: 'Roblox Player', executableName: 'robloxplayerbeta.exe', publisher: 'Roblox Corp', source: 'registry' as const, detectedAt: new Date().toISOString() },
+        { displayName: 'Opera GX', executableName: 'opera.exe', publisher: 'Opera Norway', source: 'registry' as const, detectedAt: new Date().toISOString() }
+      ];
+
+      await fetch('/api/agent/installed-apps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: device.id, installedApps: sampleApps })
+      });
+
+      appendLog(`[App Scanner] Encontradas e sincronizadas ${sampleApps.length} aplicações instaladas no computador!`);
+      onRefreshData();
+    } catch (err: any) {
+      appendLog(`Erro ao simular scan: ${err.message}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
       <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl animate-in zoom-in-95">
@@ -280,6 +309,15 @@ export const SimulatorModal: React.FC<SimulatorModalProps> = ({
               >
                 <AlertTriangle className="w-3.5 h-3.5" />
                 <span>Simular Fecho Forçado de App</span>
+              </button>
+
+              <button
+                onClick={handleSimulateAppScan}
+                disabled={busy}
+                className="px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center space-x-1"
+              >
+                <Gamepad2 className="w-3.5 h-3.5" />
+                <span>Simular Leitura de Apps Instaladas (Scan)</span>
               </button>
             </div>
           </div>

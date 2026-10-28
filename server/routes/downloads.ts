@@ -216,8 +216,112 @@ function Sync-WithServer {
     return $false
 }
 
-# First sync
+# ----------------- Installed Applications Detection -----------------
+function Get-InstalledApplications {
+    $apps = @()
+    $regPaths = @(
+        "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
+        "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
+        "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*"
+    )
+
+    foreach ($rp in $regPaths) {
+        try {
+            $items = Get-ItemProperty -Path $rp -ErrorAction SilentlyContinue
+            foreach ($item in $items) {
+                if ($item.DisplayName -and -not $item.SystemComponent -and ($item.DisplayName -notmatch '(?i)Security Update|Update for|Hotfix|Service Pack|Microsoft Visual C\+\+|Redistributable')) {
+                    $exe = ""
+                    if ($item.DisplayIcon) {
+                        $cleanIcon = ($item.DisplayIcon -split ',')[0].Trim('"')
+                        if ($cleanIcon -match '\.exe$') {
+                            $exe = [System.IO.Path]::GetFileName($cleanIcon).ToLower()
+                        }
+                    }
+                    if (-not $exe -and $item.InstallLocation) {
+                        try {
+                            $found = Get-ChildItem -Path $item.InstallLocation -Filter "*.exe" -File -Recurse -Depth 1 -ErrorAction SilentlyContinue | Select-Object -First 1
+                            if ($found) { $exe = $found.Name.ToLower() }
+                        } catch {}
+                    }
+                    if (-not $exe) {
+                        $cleanName = ($item.DisplayName -replace '[^a-zA-Z0-9]','').ToLower()
+                        if ($cleanName) { $exe = "$cleanName.exe" }
+                    }
+
+                    if ($exe) {
+                        $apps += @{
+                            displayName = [string]$item.DisplayName
+                            executableName = [string]$exe
+                            publisher = [string]$item.Publisher
+                            installLocation = [string]$item.InstallLocation
+                            source = "registry"
+                        }
+                    }
+                }
+            }
+        } catch {}
+    }
+
+    # Also scan Common & User Start Menu Shortcuts (.lnk)
+    $shortcutDirs = @(
+        "$env:ProgramData\Microsoft\Windows\Start Menu\Programs",
+        "C:\Users\$TargetUser\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
+    )
+    try {
+        $wsh = New-Object -ComObject WScript.Shell -ErrorAction SilentlyContinue
+        if ($wsh) {
+            foreach ($sdir in $shortcutDirs) {
+                if (Test-Path $sdir) {
+                    Get-ChildItem -Path $sdir -Filter "*.lnk" -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+                        try {
+                            $link = $wsh.CreateShortcut($_.FullName)
+                            $target = $link.TargetPath
+                            if ($target -and $target.EndsWith(".exe") -and -not ($target -match "(?i)uninstall|setup|help|readme")) {
+                                $apps += @{
+                                    displayName = $_.BaseName
+                                    executableName = [System.IO.Path]::GetFileName($target).ToLower()
+                                    installLocation = [System.IO.Path]::GetDirectoryName($target)
+                                    source = "start_menu"
+                                }
+                            }
+                        } catch {}
+                    }
+                }
+            }
+        }
+    } catch {}
+
+    # Deduplicate by executableName
+    $unique = @{}
+    foreach ($a in $apps) {
+        $key = $a.executableName.ToLower()
+        if (-not $unique.ContainsKey($key)) {
+            $unique[$key] = $a
+        }
+    }
+    return @($unique.Values)
+}
+
+function Send-InstalledAppsToServer {
+    try {
+        Write-Log "A pesquisar aplicações instaladas no computador..."
+        $appList = Get-InstalledApplications
+        if ($appList.Count -gt 0) {
+            $payload = @{
+                deviceId = $DeviceId
+                installedApps = $appList
+            } | ConvertTo-Json -Depth 5
+            Invoke-RestMethod -Uri "$ServerUrl/api/agent/installed-apps" -Method Post -Body $payload -ContentType "application/json" -TimeoutSec 10 | Out-Null
+            Write-Log "Enviadas $($appList.Count) aplicações instaladas reais para o servidor WinGuard."
+        }
+    } catch {
+        Write-Log "Aviso ao enviar lista de aplicações: $_" "WARN"
+    }
+}
+
+# First sync & initial app scan
 Sync-WithServer | Out-Null
+Send-InstalledAppsToServer | Out-Null
 
 # ----------------- Main Enforcement Loop -----------------
 $state = Load-LocalState
@@ -401,6 +505,8 @@ while ($true) {
                         [Win32]::LockWorkStation() | Out-Null
                     } elseif ($cmd.command -eq "bonus_time") {
                         Sync-WithServer | Out-Null
+                    } elseif ($cmd.command -eq "scan_apps") {
+                        Send-InstalledAppsToServer | Out-Null
                     }
                 }
             }

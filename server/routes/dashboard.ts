@@ -40,6 +40,7 @@ dashboardRouter.get('/device/:id', (req: Request, res: Response) => {
     const blockedDomains = db.getAllBlockedDomains(id);
     const events = db.getEvents(id, 25);
     const hostsSnippet = db.generateHostsBlockSnippet(id);
+    const installedApps = db.getInstalledApps(id);
 
     res.json({
       device: liveDevice,
@@ -47,7 +48,8 @@ dashboardRouter.get('/device/:id', (req: Request, res: Response) => {
       appUsage: Object.values(appUsage),
       blockedDomains,
       hostsSnippet,
-      events
+      events,
+      installedApps
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -167,6 +169,14 @@ dashboardRouter.post('/command/:deviceId', (req: Request, res: Response) => {
         type: 'remote_command',
         severity: 'info',
         message: `Computador ${dev.name} desbloqueado remotamente pelo administrador.`,
+        details: payload
+      });
+    } else if (command === 'scan_apps') {
+      db.addEvent({
+        deviceId,
+        type: 'remote_command',
+        severity: 'info',
+        message: `Solicitação de leitura e deteção de aplicações instaladas enviada para o computador ${dev.name}.`,
         details: payload
       });
     }

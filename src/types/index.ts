@@ -63,11 +63,20 @@ export interface AppUsageRecord {
   lastActive: string;
 }
 
+export interface InstalledApp {
+  displayName: string;
+  executableName: string;
+  publisher?: string;
+  installLocation?: string;
+  detectedAt: string;
+  source: 'registry' | 'process_tracker' | 'start_menu';
+}
+
 export interface ActivityEvent {
   id: string;
   deviceId: string;
   timestamp: string;
-  type: 'blocked_site_attempt' | 'app_limit_reached' | 'app_killed' | 'pc_locked' | 'rule_updated' | 'user_login' | 'bonus_granted' | 'remote_command';
+  type: 'blocked_site_attempt' | 'app_limit_reached' | 'app_killed' | 'pc_locked' | 'rule_updated' | 'user_login' | 'bonus_granted' | 'remote_command' | 'apps_scanned';
   severity: 'info' | 'warning' | 'alert';
   message: string;
   details?: Record<string, any>;

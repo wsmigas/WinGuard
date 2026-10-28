@@ -99,7 +99,16 @@ agentRouter.post('/heartbeat', (req: Request, res: Response) => {
       });
     }
 
-    // Pull any pending remote commands (e.g. lock now, bonus time)
+    // Record active foreground app in discovered apps
+    if (foregroundApp) {
+      db.recordDetectedApp(deviceId, {
+        executableName: foregroundApp,
+        displayName: windowTitle ? windowTitle.split(' - ')[0] : foregroundApp,
+        source: 'process_tracker'
+      });
+    }
+
+    // Pull any pending remote commands (e.g. lock now, bonus time, scan_apps)
     const pendingCommands = db.pullPendingCommands(deviceId);
 
     const rules = db.getRules(deviceId);
@@ -128,7 +137,32 @@ agentRouter.post('/telemetry', (req: Request, res: Response) => {
 
     db.recordAppUsageDelta(deviceId, appDeltas);
 
+    for (const item of appDeltas) {
+      if (item.executableName) {
+        db.recordDetectedApp(deviceId, {
+          executableName: item.executableName,
+          displayName: item.displayName || item.executableName,
+          source: 'process_tracker'
+        });
+      }
+    }
+
     res.json({ success: true, recordedCount: appDeltas.length });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Report full scan of installed applications found on Windows PC
+agentRouter.post('/installed-apps', (req: Request, res: Response) => {
+  try {
+    const { deviceId, installedApps } = req.body;
+    if (!deviceId || !Array.isArray(installedApps)) {
+      return res.status(400).json({ error: 'deviceId and installedApps array required' });
+    }
+
+    db.setInstalledApps(deviceId, installedApps);
+    res.json({ success: true, count: installedApps.length });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

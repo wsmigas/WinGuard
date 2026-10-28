@@ -1,4 +1,4 @@
-import { DeviceInfo, DeviceRules, AppUsageRecord, ActivityEvent } from '../types';
+import { DeviceInfo, DeviceRules, AppUsageRecord, ActivityEvent, InstalledApp } from '../types';
 
 const API_BASE = '/api';
 
@@ -17,6 +17,7 @@ export const api = {
     blockedDomains: string[];
     hostsSnippet: string;
     events: ActivityEvent[];
+    installedApps: InstalledApp[];
   }> {
     const res = await fetch(`${API_BASE}/dashboard/device/${id}`);
     if (!res.ok) throw new Error('Falha ao obter dados do computador');
@@ -61,7 +62,7 @@ export const api = {
     return data.rules;
   },
 
-  async sendCommand(deviceId: string, command: 'lock_now' | 'bonus_time' | 'message_child' | 'unlock_now', payload?: any): Promise<void> {
+  async sendCommand(deviceId: string, command: 'lock_now' | 'bonus_time' | 'message_child' | 'unlock_now' | 'scan_apps', payload?: any): Promise<void> {
     const res = await fetch(`${API_BASE}/dashboard/command/${deviceId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

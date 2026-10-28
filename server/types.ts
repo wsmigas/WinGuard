@@ -63,11 +63,20 @@ export interface AppUsageRecord {
   lastActive: string;
 }
 
+export interface InstalledApp {
+  displayName: string;
+  executableName: string;
+  publisher?: string;
+  installLocation?: string;
+  detectedAt: string;
+  source: 'registry' | 'process_tracker' | 'start_menu';
+}
+
 export interface ActivityEvent {
   id: string;
   deviceId: string;
   timestamp: string;
-  type: 'blocked_site_attempt' | 'app_limit_reached' | 'app_killed' | 'pc_locked' | 'rule_updated' | 'user_login' | 'bonus_granted' | 'remote_command';
+  type: 'blocked_site_attempt' | 'app_limit_reached' | 'app_killed' | 'pc_locked' | 'rule_updated' | 'user_login' | 'bonus_granted' | 'remote_command' | 'apps_scanned';
   severity: 'info' | 'warning' | 'alert';
   message: string;
   details?: Record<string, any>;
@@ -77,6 +86,7 @@ export interface DatabaseSchema {
   devices: DeviceInfo[];
   rules: Record<string, DeviceRules>; // deviceId -> DeviceRules
   appUsage: Record<string, Record<string, Record<string, AppUsageRecord>>>; // deviceId -> dateKey (YYYY-MM-DD) -> exe -> AppUsageRecord
+  installedApps: Record<string, InstalledApp[]>; // deviceId -> InstalledApp[]
   events: ActivityEvent[];
-  pendingCommands: Record<string, Array<{ id: string; command: 'lock_now' | 'bonus_time' | 'message_child' | 'unlock_now'; payload?: any; createdAt: string }>>;
+  pendingCommands: Record<string, Array<{ id: string; command: 'lock_now' | 'bonus_time' | 'message_child' | 'unlock_now' | 'scan_apps'; payload?: any; createdAt: string }>>;
 }
