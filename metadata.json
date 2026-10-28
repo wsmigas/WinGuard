@@ -1,0 +1,6 @@
+{
+  "name": "WinGuard Parental Control",
+  "description": "Controlo parental avançado para Windows 10/11 com gestão centralizada em Proxmox LXC, regras offline, bloqueio de sites via hosts e controlo por aplicação.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

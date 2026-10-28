@@ -1,0 +1,188 @@
+{
+  "devices": [
+    {
+      "id": "dev-win11-quarto",
+      "name": "dev-win11-quarto",
+      "monitoredUser": "pedro",
+      "osVersion": "Windows 11 Pro 64-bit",
+      "ipAddress": "192.168.1.115",
+      "agentVersion": "v1.4.2-lxc",
+      "pairedAt": "2026-10-21T10:03:30.048Z",
+      "lastSeen": "2026-10-28T10:04:49.183Z",
+      "isOnline": true,
+      "currentActiveUser": "pedro",
+      "currentForegroundApp": "robloxplayerbeta.exe",
+      "currentWindowTitle": "Roblox - Blox Fruits",
+      "todayActiveMinutes": 75,
+      "todayUptimeMinutes": 140,
+      "isLocked": false,
+      "pendingRulesVersion": 3,
+      "appliedRulesVersion": 3
+    }
+  ],
+  "rules": {
+    "dev-win11-quarto": {
+      "version": 3,
+      "updatedAt": "2026-10-28T09:03:30.049Z",
+      "globalDailyLimitMinutesWeekday": 120,
+      "globalDailyLimitMinutesWeekend": 240,
+      "bonusMinutesToday": 0,
+      "curfew": {
+        "enabled": true,
+        "weekdayStartTime": "21:30",
+        "weekdayEndTime": "07:30",
+        "weekendStartTime": "23:00",
+        "weekendEndTime": "08:30"
+      },
+      "appRules": [
+        {
+          "id": "app-roblox",
+          "executableName": "robloxplayerbeta.exe",
+          "displayName": "Roblox Player",
+          "category": "games",
+          "status": "limited",
+          "dailyLimitMinutes": 60,
+          "allowedStartTime": "14:00",
+          "allowedEndTime": "19:30"
+        },
+        {
+          "id": "app-discord",
+          "executableName": "discord.exe",
+          "displayName": "Discord",
+          "category": "social",
+          "status": "limited",
+          "dailyLimitMinutes": 90,
+          "allowedStartTime": "10:00",
+          "allowedEndTime": "20:30"
+        },
+        {
+          "id": "app-steam",
+          "executableName": "steam.exe",
+          "displayName": "Steam Client",
+          "category": "games",
+          "status": "limited",
+          "dailyLimitMinutes": 60,
+          "allowedStartTime": "16:00",
+          "allowedEndTime": "20:00"
+        },
+        {
+          "id": "app-chrome",
+          "executableName": "chrome.exe",
+          "displayName": "Google Chrome",
+          "category": "browsers",
+          "status": "allowed",
+          "dailyLimitMinutes": 180
+        },
+        {
+          "id": "app-minecraft",
+          "executableName": "javaw.exe",
+          "displayName": "Minecraft Java / Bedrock",
+          "category": "games",
+          "status": "limited",
+          "dailyLimitMinutes": 90,
+          "allowedStartTime": "15:00",
+          "allowedEndTime": "20:00"
+        },
+        {
+          "id": "app-word",
+          "executableName": "winword.exe",
+          "displayName": "Microsoft Word (Escola)",
+          "category": "education",
+          "status": "allowed",
+          "dailyLimitMinutes": 0
+        }
+      ],
+      "blockedDomains": [
+        "tiktok.com",
+        "www.tiktok.com",
+        "omegle.com",
+        "www.omegle.com",
+        "csgoempire.com",
+        "pornhub.com",
+        "xvideos.com"
+      ],
+      "blocklistCategories": {
+        "adult": true,
+        "social": false,
+        "gaming": false,
+        "gambling": true
+      },
+      "customHostsHeader": "# WinGuard Parental Control - Proxmox LXC Managed"
+    }
+  },
+  "appUsage": {
+    "dev-win11-quarto": {
+      "2026-10-28": {
+        "robloxplayerbeta.exe": {
+          "executableName": "robloxplayerbeta.exe",
+          "displayName": "Roblox Player",
+          "minutesUsedToday": 48,
+          "lastActive": "2026-10-28T10:03:30.049Z"
+        },
+        "chrome.exe": {
+          "executableName": "chrome.exe",
+          "displayName": "Google Chrome",
+          "minutesUsedToday": 22,
+          "lastActive": "2026-10-28T09:43:30.049Z"
+        },
+        "discord.exe": {
+          "executableName": "discord.exe",
+          "displayName": "Discord",
+          "minutesUsedToday": 15,
+          "lastActive": "2026-10-28T09:13:30.049Z"
+        }
+      }
+    }
+  },
+  "events": [
+    {
+      "id": "evt-1793181889184-kyyt1",
+      "timestamp": "2026-10-28T10:04:49.184Z",
+      "deviceId": "dev-win11-quarto",
+      "type": "rule_updated",
+      "severity": "info",
+      "message": "Agente registado com sucesso para o utilizador \"pedro\" no computador dev-win11-quarto.",
+      "details": {
+        "osVersion": "Windows 11 Pro 64-bit",
+        "ipAddress": "192.168.1.115"
+      }
+    },
+    {
+      "id": "evt-1",
+      "deviceId": "dev-win11-quarto",
+      "timestamp": "2026-10-28T09:48:30.049Z",
+      "type": "blocked_site_attempt",
+      "severity": "warning",
+      "message": "Tentativa de acesso ao site bloqueado: tiktok.com (Redirecionado para 127.0.0.1 pelo ficheiro hosts)",
+      "details": {
+        "domain": "tiktok.com",
+        "process": "chrome.exe"
+      }
+    },
+    {
+      "id": "evt-2",
+      "deviceId": "dev-win11-quarto",
+      "timestamp": "2026-10-28T08:43:30.049Z",
+      "type": "rule_updated",
+      "severity": "info",
+      "message": "Novas regras horárias sincronizadas com o computador do filho.",
+      "details": {
+        "version": 3
+      }
+    },
+    {
+      "id": "evt-3",
+      "deviceId": "dev-win11-quarto",
+      "timestamp": "2026-10-28T07:43:30.049Z",
+      "type": "user_login",
+      "severity": "info",
+      "message": "Sessão iniciada pelo utilizador monitorizado: \"pedro\" no PC-QUARTO-FILHO",
+      "details": {
+        "user": "pedro"
+      }
+    }
+  ],
+  "pendingCommands": {
+    "dev-win11-quarto": []
+  }
+}
