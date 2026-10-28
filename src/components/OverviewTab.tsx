@@ -12,7 +12,8 @@ import {
   Radio,
   Gamepad2,
   Send,
-  Sparkles
+  Sparkles,
+  Trash2
 } from 'lucide-react';
 import { DeviceInfo, DeviceRules, AppUsageRecord, ActivityEvent } from '../types';
 import { api } from '../services/api';
@@ -23,6 +24,7 @@ interface OverviewTabProps {
   appUsage: AppUsageRecord[];
   events: ActivityEvent[];
   onRefresh: () => void;
+  onOpenDeleteModal?: () => void;
 }
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({
@@ -30,7 +32,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   rules,
   appUsage,
   events,
-  onRefresh
+  onRefresh,
+  onOpenDeleteModal
 }) => {
   const [actionLoading, setActionLoading] = useState(false);
   const [messagePrompt, setMessagePrompt] = useState(false);
@@ -166,6 +169,17 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <Send className="w-3.5 h-3.5" />
               <span>Enviar Mensagem</span>
             </button>
+
+            {onOpenDeleteModal && (
+              <button
+                onClick={onOpenDeleteModal}
+                title={`Eliminar computador ${device.name} do servidor`}
+                className="inline-flex items-center space-x-1.5 px-3 py-2 bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700/80 hover:border-rose-500/30 text-xs font-semibold rounded-xl transition cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Eliminar PC</span>
+              </button>
+            )}
           </div>
         </div>
 

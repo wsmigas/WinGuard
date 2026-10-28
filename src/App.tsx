@@ -9,6 +9,7 @@ import { ProxmoxGuideTab } from './components/ProxmoxGuideTab';
 import { ActivityLogsTab } from './components/ActivityLogsTab';
 import { SimulatorModal } from './components/SimulatorModal';
 import { NewDeviceModal } from './components/NewDeviceModal';
+import { DeleteDeviceModal } from './components/DeleteDeviceModal';
 import { TabType, DeviceInfo, DeviceRules, AppUsageRecord, ActivityEvent } from './types';
 import { api } from './services/api';
 import { Shield, RefreshCw } from 'lucide-react';
@@ -29,6 +30,7 @@ export default function App() {
 
   const [simulatorOpen, setSimulatorOpen] = useState(false);
   const [newDeviceOpen, setNewDeviceOpen] = useState(false);
+  const [deleteDeviceOpen, setDeleteDeviceOpen] = useState(false);
 
   // Load all devices
   const loadDevices = useCallback(async (preferredId?: string) => {
@@ -90,6 +92,22 @@ export default function App() {
     loadDevices(newId);
   };
 
+  const handleDeviceDeleted = async () => {
+    setDevice(null);
+    setRules(null);
+    try {
+      const devList = await api.getDevices();
+      setDevices(devList);
+      if (devList.length > 0) {
+        setSelectedDeviceId(devList[0].id);
+      } else {
+        setSelectedDeviceId('');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading && devices.length === 0) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-300">
@@ -112,6 +130,7 @@ export default function App() {
         selectedDeviceId={selectedDeviceId}
         onSelectDevice={setSelectedDeviceId}
         onOpenNewDeviceModal={() => setNewDeviceOpen(true)}
+        onOpenDeleteDeviceModal={() => setDeleteDeviceOpen(true)}
         onOpenSimulator={() => setSimulatorOpen(true)}
       />
 
@@ -141,6 +160,7 @@ export default function App() {
                 appUsage={appUsage}
                 events={events}
                 onRefresh={() => loadDeviceDetail(device.id)}
+                onOpenDeleteModal={() => setDeleteDeviceOpen(true)}
               />
             )}
 
@@ -208,6 +228,14 @@ export default function App() {
         isOpen={newDeviceOpen}
         onClose={() => setNewDeviceOpen(false)}
         onDeviceCreated={handleDeviceCreated}
+      />
+
+      {/* Delete Device Modal */}
+      <DeleteDeviceModal
+        device={device}
+        isOpen={deleteDeviceOpen}
+        onClose={() => setDeleteDeviceOpen(false)}
+        onDeviceDeleted={handleDeviceDeleted}
       />
     </div>
   );

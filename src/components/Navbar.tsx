@@ -9,7 +9,8 @@ import {
   History,
   Activity,
   Laptop,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { TabType, DeviceInfo } from '../types';
 
@@ -20,6 +21,7 @@ interface NavbarProps {
   selectedDeviceId: string;
   onSelectDevice: (id: string) => void;
   onOpenNewDeviceModal: () => void;
+  onOpenDeleteDeviceModal: () => void;
   onOpenSimulator: () => void;
 }
 
@@ -30,6 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   selectedDeviceId,
   onSelectDevice,
   onOpenNewDeviceModal,
+  onOpenDeleteDeviceModal,
   onOpenSimulator
 }) => {
   const selectedDevice = devices.find((d) => d.id === selectedDeviceId);
@@ -74,11 +77,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               </select>
               <button
                 onClick={onOpenNewDeviceModal}
-                title="Adicionar novo computador"
-                className="p-1 hover:bg-slate-700 text-slate-400 hover:text-white rounded transition"
+                title="Adicionar novo computador (+)"
+                className="p-1 hover:bg-slate-700 text-slate-300 hover:text-white rounded transition cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
               </button>
+              {selectedDevice && (
+                <button
+                  onClick={onOpenDeleteDeviceModal}
+                  title={`Eliminar computador selecionado: ${selectedDevice.name} (-)`}
+                  className="p-1 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded transition cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
 
             {/* Status indicator */}
